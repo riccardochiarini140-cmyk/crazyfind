@@ -7,7 +7,7 @@
                 const r = await fetch('https://api.country.is/');
                 const d = await r.json();
                 window._userCountry = d.country || '';
-                const redirectCountries = ['NO', 'GB', 'RO', 'PL', 'DE'];
+                const redirectCountries = ['IT', 'NO', 'GB', 'RO', 'PL', 'DE'];
                 if (redirectCountries.includes(d.country)) {
                     window.location.replace('https://globalfind.netlify.app/?ref=crazyfind');
                 }
@@ -3154,8 +3154,10 @@ window.openModal = function(id) {
                             var qcUrl = data.result.url;
                             fetch(qcUrl, { mode: 'no-cors' }).catch(function() {});
                             var idMatch = qcUrl.match(/\/qc\/(\d+)/);
-                            var exploreUrl = idMatch
-                                ? 'https://www.uufinds.com/exploreMore/' + idMatch[1]
+                            var productId = idMatch ? idMatch[1] : null;
+                            // ID valido UUFinds = minimo 15 cifre (snowflake ID)
+                            var exploreUrl = (productId && productId.length >= 15)
+                                ? 'https://www.uufinds.com/exploreMore/' + productId
                                 : qcUrl;
                             win.location.href = exploreUrl;
                         } else {
