@@ -3153,12 +3153,16 @@ window.openModal = function(id) {
                         if (data.success && data.result && data.result.url) {
                             var qcUrl = data.result.url;
                             fetch(qcUrl, { mode: 'no-cors' }).catch(function() {});
-                            var idMatch = qcUrl.match(/\/qc\/(\d+)/);
-                            var productId = idMatch ? idMatch[1] : null;
-                            // ID valido UUFinds = minimo 15 cifre (snowflake ID)
-                            var exploreUrl = (productId && productId.length >= 15)
-                                ? 'https://www.uufinds.com/exploreMore/' + productId
-                                : qcUrl;
+                            // Estrai l'ID dal path es. /goodItemDetail/qc/c9633e25...
+                            var exploreUrl = qcUrl;
+                            try {
+                                var urlObj = new URL(qcUrl);
+                                var parts = urlObj.pathname.split('/').filter(Boolean);
+                                var qcIdx = parts.indexOf('qc');
+                                if (qcIdx !== -1 && parts[qcIdx + 1] && parts[qcIdx + 1].length >= 8) {
+                                    exploreUrl = 'https://www.uufinds.com/exploreMore/' + parts[qcIdx + 1];
+                                }
+                            } catch(e) {}
                             win.location.href = exploreUrl;
                         } else {
                             win.close();
