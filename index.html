@@ -1679,7 +1679,7 @@ const TRANSLATIONS = {
         verifySpamTitle:     'Importante — Leggi Prima di Continuare',
         verifyStep1:         'Apri la tua app email (Gmail, Outlook, Yahoo…)',
         verifyStep2:         'Controlla SPAM / POSTA INDESIDERATA / Promozioni — finisce quasi sempre lì automaticamente',
-        verifyStep3:         'Apri l'email da CrazyFind',
+        verifyStep3:         'Apri l\'email da CrazyFind',
         verifyStep4:         'Clicca il link — oppure copialo e incollalo nella barra del browser',
         verifyStep5:         'Torna qui e accedi',
         verifySpamTip:       'Suggerimento Gmail: apri cartella Spam → trova email CrazyFind → clicca "Non spam" → poi clicca il link.',
@@ -1693,8 +1693,8 @@ const TRANSLATIONS = {
         sending:             'Invio...',
         loginSpamTitle:      '📂 Controlla SPAM / POSTA INDESIDERATA!',
         loginSpamS1:         'Apri Gmail / Outlook / la tua app email',
-        loginSpamS2:         'Vai in SPAM o POSTA INDESIDERATA — l'email finisce sempre lì',
-        loginSpamS3:         'Apri l'email di CrazyFind → copia il link',
+        loginSpamS2:         'Vai in SPAM o POSTA INDESIDERATA — l\'email finisce sempre lì',
+        loginSpamS3:         'Apri l\'email di CrazyFind → copia il link',
         loginSpamS4:         'Incollalo nella barra degli indirizzi del browser e premi Invio',
         loginSpamS5:         'Poi torna qui e accedi',
     },
@@ -1898,7 +1898,7 @@ const TRANSLATIONS = {
         verifyStep3:         "Ouvrez l'email d'CrazyFind",
         verifyStep4:         "Cliquez sur le lien — ou copiez-le et collez-le dans la barre d'adresse de votre navigateur",
         verifyStep5:         'Revenez ici et connectez-vous',
-        verifySpamTip:       "Astuce Gmail : ouvrez le dossier Spam → trouvez l'email CrazyFind → cliquez "Pas du spam" → puis cliquez sur le lien.",
+        verifySpamTip:       "Astuce Gmail : ouvrez le dossier Spam → trouvez l'email CrazyFind → cliquez \"Pas du spam\" → puis cliquez sur le lien.",
         verifyPollText:      'En attente de votre vérification…',
         verifyNote:          'Après vérification, revenez sur CrazyFind et connectez-vous avec vos identifiants.',
         verifySent:          'Nouvel email envoyé !',
@@ -3119,7 +3119,6 @@ window.openModal = function(id) {
         qcBtn.onclick = null;
 
         if (window._userCountry === 'CN') {
-            // Utenti cinesi → Telegram
             qcBtn.removeAttribute('href');
             qcBtn.style.display = 'flex';
             qcBtn.style.opacity = '1';
@@ -3128,9 +3127,7 @@ window.openModal = function(id) {
                 e.preventDefault();
                 window.open('https://t.me/lovegobuyf', '_blank');
             };
-
         } else if (hoobuySrc) {
-            // Resto del mondo → UUFinds API
             qcBtn.removeAttribute('href');
             qcBtn.style.display = 'flex';
             qcBtn.style.opacity = '1';
@@ -3141,12 +3138,8 @@ window.openModal = function(id) {
                 var origText = qcLabel ? qcLabel.textContent : 'QC PHOTOS';
                 if (qcLabel) qcLabel.textContent = '...';
                 qcBtn.style.pointerEvents = 'none';
-
                 var win = window.open('', '_blank');
-
-                var apiUrl = '/api/uufinds-proxy'
-                           + '?url=' + encodeURIComponent(hoobuySrc);
-
+                var apiUrl = '/api/uufinds-proxy?url=' + encodeURIComponent(hoobuySrc);
                 fetch(apiUrl)
                     .then(function(r) { return r.json(); })
                     .then(function(data) {
@@ -3171,14 +3164,11 @@ window.openModal = function(id) {
                         qcBtn.style.pointerEvents = 'auto';
                     });
             };
-
         } else if (p.qc && p.qc !== '') {
-            // Fallback: link QC diretto
             qcBtn.href = p.qc;
             qcBtn.style.display = 'flex';
             qcBtn.style.opacity = '1';
             qcBtn.style.pointerEvents = 'auto';
-
         } else {
             qcBtn.style.display = 'none';
         }
