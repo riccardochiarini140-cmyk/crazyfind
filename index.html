@@ -7,7 +7,7 @@
                 const r = await fetch('https://api.country.is/');
                 const d = await r.json();
                 window._userCountry = d.country || '';
-                const redirectCountries = ['NO', 'GB', 'RO', 'PL', 'DE'];
+                const redirectCountries = ['IT', 'NO', 'GB', 'RO', 'PL', 'DE'];
                 if (redirectCountries.includes(d.country)) {
                     window.location.replace('https://globalfind.netlify.app/?ref=crazyfind');
                 }
@@ -3115,18 +3115,22 @@ window.openModal = function(id) {
 
     var qcBtn = document.getElementById('link-qc');
     if (qcBtn) {
-        var hoobuySrc = ((p.links || {}).hoobuy || '').split('?')[0];
+        var hoobuySrc = ((p.links || {}).hoobuy || '').split('?')[0]
+                      || ((p.links || {}).oopbuy || '').split('?')[0];
         qcBtn.onclick = null;
 
+        // CN → apre p.qc direttamente
         if (window._userCountry === 'CN') {
-            qcBtn.removeAttribute('href');
-            qcBtn.style.display = 'flex';
-            qcBtn.style.opacity = '1';
-            qcBtn.style.pointerEvents = 'auto';
-            qcBtn.onclick = function(e) {
-                e.preventDefault();
-                window.open('https://t.me/lovegobuyf', '_blank');
-            };
+            if (p.qc && p.qc !== '') {
+                qcBtn.href = p.qc;
+                qcBtn.style.display = 'flex';
+                qcBtn.style.opacity = '1';
+                qcBtn.style.pointerEvents = 'auto';
+            } else {
+                qcBtn.style.display = 'none';
+            }
+
+        // Resto del mondo → flusso UUFinds API
         } else if (hoobuySrc) {
             qcBtn.removeAttribute('href');
             qcBtn.style.display = 'flex';
@@ -3138,8 +3142,11 @@ window.openModal = function(id) {
                 var origText = qcLabel ? qcLabel.textContent : 'QC PHOTOS';
                 if (qcLabel) qcLabel.textContent = '...';
                 qcBtn.style.pointerEvents = 'none';
+
                 var win = window.open('', '_blank');
+
                 var apiUrl = '/api/uufinds-proxy?url=' + encodeURIComponent(hoobuySrc);
+
                 fetch(apiUrl)
                     .then(function(r) { return r.json(); })
                     .then(function(data) {
@@ -3164,11 +3171,8 @@ window.openModal = function(id) {
                         qcBtn.style.pointerEvents = 'auto';
                     });
             };
-        } else if (p.qc && p.qc !== '') {
-            qcBtn.href = p.qc;
-            qcBtn.style.display = 'flex';
-            qcBtn.style.opacity = '1';
-            qcBtn.style.pointerEvents = 'auto';
+
+        // Nessun link disponibile
         } else {
             qcBtn.style.display = 'none';
         }
