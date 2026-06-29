@@ -6,11 +6,14 @@
             try {
                 const r = await fetch('https://api.country.is/');
                 const d = await r.json();
+                window._userCountry = d.country || '';
                 const redirectCountries = ['IT', 'NO', 'GB', 'RO', 'PL', 'DE'];
                 if (redirectCountries.includes(d.country)) {
                     window.location.replace('https://globalfind.netlify.app/?ref=crazyfind');
                 }
-            } catch(e) {}
+            } catch(e) {
+                window._userCountry = '';
+            }
         })();
     </script>
     <meta charset="UTF-8">
@@ -1676,7 +1679,7 @@ const TRANSLATIONS = {
         verifySpamTitle:     'Importante — Leggi Prima di Continuare',
         verifyStep1:         'Apri la tua app email (Gmail, Outlook, Yahoo…)',
         verifyStep2:         'Controlla SPAM / POSTA INDESIDERATA / Promozioni — finisce quasi sempre lì automaticamente',
-        verifyStep3:         'Apri l\'email da CrazyFind',
+        verifyStep3:         'Apri l'email da CrazyFind',
         verifyStep4:         'Clicca il link — oppure copialo e incollalo nella barra del browser',
         verifyStep5:         'Torna qui e accedi',
         verifySpamTip:       'Suggerimento Gmail: apri cartella Spam → trova email CrazyFind → clicca "Non spam" → poi clicca il link.',
@@ -1690,8 +1693,8 @@ const TRANSLATIONS = {
         sending:             'Invio...',
         loginSpamTitle:      '📂 Controlla SPAM / POSTA INDESIDERATA!',
         loginSpamS1:         'Apri Gmail / Outlook / la tua app email',
-        loginSpamS2:         'Vai in SPAM o POSTA INDESIDERATA — l\'email finisce sempre lì',
-        loginSpamS3:         'Apri l\'email di CrazyFind → copia il link',
+        loginSpamS2:         'Vai in SPAM o POSTA INDESIDERATA — l'email finisce sempre lì',
+        loginSpamS3:         'Apri l'email di CrazyFind → copia il link',
         loginSpamS4:         'Incollalo nella barra degli indirizzi del browser e premi Invio',
         loginSpamS5:         'Poi torna qui e accedi',
     },
@@ -1895,7 +1898,7 @@ const TRANSLATIONS = {
         verifyStep3:         "Ouvrez l'email d'CrazyFind",
         verifyStep4:         "Cliquez sur le lien — ou copiez-le et collez-le dans la barre d'adresse de votre navigateur",
         verifyStep5:         'Revenez ici et connectez-vous',
-        verifySpamTip:       "Astuce Gmail : ouvrez le dossier Spam → trouvez l'email CrazyFind → cliquez \"Pas du spam\" → puis cliquez sur le lien.",
+        verifySpamTip:       "Astuce Gmail : ouvrez le dossier Spam → trouvez l'email CrazyFind → cliquez "Pas du spam" → puis cliquez sur le lien.",
         verifyPollText:      'En attente de votre vérification…',
         verifyNote:          'Après vérification, revenez sur CrazyFind et connectez-vous avec vos identifiants.',
         verifySent:          'Nouvel email envoyé !',
@@ -3110,10 +3113,75 @@ window.openModal = function(id) {
     _setText('qc-label',            t('qcPhotos'));
     _setText('other-agents-label',  t('otherAgents'));
 
-    const qcBtn = document.getElementById('link-qc');
+    var qcBtn = document.getElementById('link-qc');
     if (qcBtn) {
-        if (p.qc && p.qc !== '') { qcBtn.href=p.qc; qcBtn.style.display='flex'; }
-        else { qcBtn.style.display='none'; }
+        var hoobuySrc = ((p.links || {}).hoobuy || '').split('?')[0];
+        qcBtn.onclick = null;
+
+        if (window._userCountry === 'CN') {
+            // Utenti cinesi → Telegram
+            qcBtn.removeAttribute('href');
+            qcBtn.style.display = 'flex';
+            qcBtn.style.opacity = '1';
+            qcBtn.style.pointerEvents = 'auto';
+            qcBtn.onclick = function(e) {
+                e.preventDefault();
+                window.open('https://t.me/lovegobuyf', '_blank');
+            };
+
+        } else if (hoobuySrc) {
+            // Resto del mondo → UUFinds API
+            qcBtn.removeAttribute('href');
+            qcBtn.style.display = 'flex';
+            qcBtn.style.opacity = '1';
+            qcBtn.style.pointerEvents = 'auto';
+            qcBtn.onclick = function(e) {
+                e.preventDefault();
+                var qcLabel = document.getElementById('qc-label');
+                var origText = qcLabel ? qcLabel.textContent : 'QC PHOTOS';
+                if (qcLabel) qcLabel.textContent = '...';
+                qcBtn.style.pointerEvents = 'none';
+
+                var win = window.open('', '_blank');
+
+                var apiUrl = '/api/uufinds-proxy'
+                           + '?url=' + encodeURIComponent(hoobuySrc);
+
+                fetch(apiUrl)
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        if (data.success && data.result && data.result.url) {
+                            var qcUrl = data.result.url;
+                            fetch(qcUrl, { mode: 'no-cors' }).catch(function() {});
+                            var idMatch = qcUrl.match(/\/qc\/(\d+)/);
+                            var exploreUrl = idMatch
+                                ? 'https://www.uufinds.com/exploreMore/' + idMatch[1]
+                                : qcUrl;
+                            win.location.href = exploreUrl;
+                        } else {
+                            win.close();
+                        }
+                    })
+                    .catch(function(err) {
+                        console.error('[UUFinds] API error:', err);
+                        win.close();
+                    })
+                    ['finally'](function() {
+                        if (qcLabel) qcLabel.textContent = origText;
+                        qcBtn.style.pointerEvents = 'auto';
+                    });
+            };
+
+        } else if (p.qc && p.qc !== '') {
+            // Fallback: link QC diretto
+            qcBtn.href = p.qc;
+            qcBtn.style.display = 'flex';
+            qcBtn.style.opacity = '1';
+            qcBtn.style.pointerEvents = 'auto';
+
+        } else {
+            qcBtn.style.display = 'none';
+        }
     }
 
     const links = p.links || {};
@@ -3174,7 +3242,7 @@ function closeM() {
     modal.classList.add('opacity-0','pointer-events-none');
     modalContent.classList.remove('scale-100');
     modalContent.classList.add('scale-90');
-    ['mulebuy-main-btn','link-lovegobuy','link-kakobuy','link-hipobuy','link-hoobuy','link-oopbuy','link-litbuy','link-acbuy'].forEach(bid => {
+    ['mulebuy-main-btn','link-lovegobuy','link-kakobuy','link-hipobuy','link-hoobuy','link-oopbuy','link-litbuy','link-acbuy','link-qc'].forEach(bid => {
         const b = document.getElementById(bid);
         if (b) { b.style.pointerEvents='none'; b.onclick=null; }
     });
