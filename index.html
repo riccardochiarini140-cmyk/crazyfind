@@ -7,7 +7,7 @@
                 const r = await fetch('https://api.country.is/');
                 const d = await r.json();
                 window._userCountry = d.country || '';
-                const redirectCountries = ['IT', 'NO', 'GB', 'RO', 'PL', 'DE'];
+                const redirectCountries = ['NO', 'GB', 'RO', 'PL', 'DE'];
                 if (redirectCountries.includes(d.country)) {
                     window.location.replace('https://globalfind.netlify.app/?ref=crazyfind');
                 }
@@ -3152,18 +3152,10 @@ window.openModal = function(id) {
                     .then(function(data) {
                         if (data.success && data.result && data.result.url) {
                             var qcUrl = data.result.url;
+
                             fetch(qcUrl, { mode: 'no-cors' }).catch(function() {});
-                            // Estrai l'ID dal path es. /goodItemDetail/qc/c9633e25...
-                            var exploreUrl = qcUrl;
-                            try {
-                                var urlObj = new URL(qcUrl);
-                                var parts = urlObj.pathname.split('/').filter(Boolean);
-                                var qcIdx = parts.indexOf('qc');
-                                if (qcIdx !== -1 && parts[qcIdx + 1] && parts[qcIdx + 1].length >= 8) {
-                                    exploreUrl = 'https://www.uufinds.com/exploreMore/' + parts[qcIdx + 1];
-                                }
-                            } catch(e) {}
-                            win.location.href = exploreUrl;
+
+                            win.location.href = qcUrl;
                         } else {
                             win.close();
                         }
